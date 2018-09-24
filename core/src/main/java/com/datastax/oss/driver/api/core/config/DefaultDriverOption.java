@@ -101,6 +101,7 @@ public enum DefaultDriverOption implements DriverOption {
   METADATA_SCHEMA_CHANGE_LISTENER_CLASS("advanced.schema-change-listener.class"),
 
   ADDRESS_TRANSLATOR_CLASS("advanced.address-translator.class"),
+  RESOLVE_CONTACT_POINTS("advanced.resolve-contact-points"),
 
   PROTOCOL_VERSION("advanced.protocol.version"),
   PROTOCOL_COMPRESSION("advanced.protocol.compression"),
