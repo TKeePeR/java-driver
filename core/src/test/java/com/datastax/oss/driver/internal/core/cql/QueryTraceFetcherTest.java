@@ -113,8 +113,8 @@ public class QueryTraceFetcherTest {
   @Test
   public void should_succeed_when_both_queries_succeed_immediately() {
     // Given
-    CompletionStage<AsyncResultSet> sessionRow = completeSessionRow();
-    CompletionStage<AsyncResultSet> eventRows = singlePageEventRows();
+    CompletionStage<AsyncResultSet<Row>> sessionRow = completeSessionRow();
+    CompletionStage<AsyncResultSet<Row>> eventRows = singlePageEventRows();
     Mockito.when(session.executeAsync(any(SimpleStatement.class)))
         .thenAnswer(invocation -> sessionRow)
         .thenAnswer(invocation -> eventRows);
@@ -164,9 +164,9 @@ public class QueryTraceFetcherTest {
   @Test
   public void should_succeed_when_events_query_is_paged() {
     // Given
-    CompletionStage<AsyncResultSet> sessionRow = completeSessionRow();
-    CompletionStage<AsyncResultSet> eventRows1 = multiPageEventRows1();
-    CompletionStage<AsyncResultSet> eventRows2 = multiPageEventRows2();
+    CompletionStage<AsyncResultSet<Row>> sessionRow = completeSessionRow();
+    CompletionStage<AsyncResultSet<Row>> eventRows1 = multiPageEventRows1();
+    CompletionStage<AsyncResultSet<Row>> eventRows2 = multiPageEventRows2();
     Mockito.when(session.executeAsync(any(SimpleStatement.class)))
         .thenAnswer(invocation -> sessionRow)
         .thenAnswer(invocation -> eventRows1)
@@ -191,9 +191,9 @@ public class QueryTraceFetcherTest {
   @Test
   public void should_retry_when_session_row_is_incomplete() {
     // Given
-    CompletionStage<AsyncResultSet> sessionRow1 = incompleteSessionRow();
-    CompletionStage<AsyncResultSet> sessionRow2 = completeSessionRow();
-    CompletionStage<AsyncResultSet> eventRows = singlePageEventRows();
+    CompletionStage<AsyncResultSet<Row>> sessionRow1 = incompleteSessionRow();
+    CompletionStage<AsyncResultSet<Row>> sessionRow2 = completeSessionRow();
+    CompletionStage<AsyncResultSet<Row>> eventRows = singlePageEventRows();
     Mockito.when(session.executeAsync(any(SimpleStatement.class)))
         .thenAnswer(invocation -> sessionRow1)
         .thenAnswer(invocation -> sessionRow2)
@@ -260,9 +260,9 @@ public class QueryTraceFetcherTest {
   @Test
   public void should_fail_when_session_query_still_incomplete_after_max_tries() {
     // Given
-    CompletionStage<AsyncResultSet> sessionRow1 = incompleteSessionRow();
-    CompletionStage<AsyncResultSet> sessionRow2 = incompleteSessionRow();
-    CompletionStage<AsyncResultSet> sessionRow3 = incompleteSessionRow();
+    CompletionStage<AsyncResultSet<Row>> sessionRow1 = incompleteSessionRow();
+    CompletionStage<AsyncResultSet<Row>> sessionRow2 = incompleteSessionRow();
+    CompletionStage<AsyncResultSet<Row>> sessionRow3 = incompleteSessionRow();
     Mockito.when(session.executeAsync(any(SimpleStatement.class)))
         .thenAnswer(invocation -> sessionRow1)
         .thenAnswer(invocation -> sessionRow2)
@@ -287,15 +287,15 @@ public class QueryTraceFetcherTest {
                         String.format("Trace %s still not complete after 3 attempts", TRACING_ID)));
   }
 
-  private CompletionStage<AsyncResultSet> completeSessionRow() {
+  private CompletionStage<AsyncResultSet<Row>> completeSessionRow() {
     return sessionRow(42);
   }
 
-  private CompletionStage<AsyncResultSet> incompleteSessionRow() {
+  private CompletionStage<AsyncResultSet<Row>> incompleteSessionRow() {
     return sessionRow(null);
   }
 
-  private CompletionStage<AsyncResultSet> sessionRow(Integer duration) {
+  private CompletionStage<AsyncResultSet<Row>> sessionRow(Integer duration) {
     Row row = Mockito.mock(Row.class);
     Mockito.when(row.getString("request")).thenReturn("mock request");
     if (duration == null) {
@@ -309,18 +309,18 @@ public class QueryTraceFetcherTest {
     Mockito.when(row.isNull("started_at")).thenReturn(false);
     Mockito.when(row.getInstant("started_at")).thenReturn(Instant.EPOCH);
 
-    AsyncResultSet rs = Mockito.mock(AsyncResultSet.class);
+    AsyncResultSet<Row> rs = Mockito.mock(AsyncResultSet.class);
     Mockito.when(rs.one()).thenReturn(row);
     return CompletableFuture.completedFuture(rs);
   }
 
-  private CompletionStage<AsyncResultSet> singlePageEventRows() {
+  private CompletionStage<AsyncResultSet<Row>> singlePageEventRows() {
     List<Row> rows = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       rows.add(eventRow(i));
     }
 
-    AsyncResultSet rs = Mockito.mock(AsyncResultSet.class);
+    AsyncResultSet<Row> rs = Mockito.mock(AsyncResultSet.class);
     Mockito.when(rs.currentPage()).thenReturn(rows);
 
     ExecutionInfo executionInfo = Mockito.mock(ExecutionInfo.class);
@@ -330,8 +330,8 @@ public class QueryTraceFetcherTest {
     return CompletableFuture.completedFuture(rs);
   }
 
-  private CompletionStage<AsyncResultSet> multiPageEventRows1() {
-    AsyncResultSet rs = Mockito.mock(AsyncResultSet.class);
+  private CompletionStage<AsyncResultSet<Row>> multiPageEventRows1() {
+    AsyncResultSet<Row> rs = Mockito.mock(AsyncResultSet.class);
 
     ImmutableList<Row> rows = ImmutableList.of(eventRow(0));
     Mockito.when(rs.currentPage()).thenReturn(rows);
@@ -343,8 +343,8 @@ public class QueryTraceFetcherTest {
     return CompletableFuture.completedFuture(rs);
   }
 
-  private CompletionStage<AsyncResultSet> multiPageEventRows2() {
-    AsyncResultSet rs = Mockito.mock(AsyncResultSet.class);
+  private CompletionStage<AsyncResultSet<Row>> multiPageEventRows2() {
+    AsyncResultSet<Row> rs = Mockito.mock(AsyncResultSet.class);
 
     ImmutableList<Row> rows = ImmutableList.of(eventRow(1));
     Mockito.when(rs.currentPage()).thenReturn(rows);

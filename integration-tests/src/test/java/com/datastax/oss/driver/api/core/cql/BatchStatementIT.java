@@ -144,7 +144,7 @@ public class BatchStatementIT {
             .addPositionalValue(name.getMethodName())
             .build();
 
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
 
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(100);
 
@@ -233,7 +233,7 @@ public class BatchStatementIT {
     }
 
     BatchStatement batchStatement = builder.build();
-    ResultSet result = sessionRule.session().execute(batchStatement);
+    ResultSet<Row> result = sessionRule.session().execute(batchStatement);
     assertThat(result.wasApplied()).isTrue();
 
     verifyBatchInsert();
@@ -262,7 +262,7 @@ public class BatchStatementIT {
     sessionRule.session().execute(batchStatement);
 
     for (int i = 1; i <= 3; i++) {
-      ResultSet result =
+      ResultSet<Row> result =
           sessionRule
               .session()
               .execute(
@@ -356,7 +356,7 @@ public class BatchStatementIT {
             .addPositionalValue(name.getMethodName())
             .build();
 
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
 
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(100);
 

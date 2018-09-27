@@ -16,6 +16,7 @@
 package com.datastax.oss.driver.example.guava.internal;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.session.Request;
@@ -57,22 +58,22 @@ public class KeyRequestProcessor implements RequestProcessor<KeyRequest, Integer
     SimpleStatement statement =
         SimpleStatement.newInstance(
             "select v1 from test where k = ? and v0 = ?", RequestProcessorIT.KEY, request.getKey());
-    RequestHandler<Statement<?>, ResultSet> subHandler =
+    RequestHandler<Statement<?>, ResultSet<Row>> subHandler =
         subProcessor.newHandler(statement, session, context, sessionLogPrefix);
     return new KeyRequestHandler(subHandler);
   }
 
   static class KeyRequestHandler implements RequestHandler<KeyRequest, Integer> {
 
-    private final RequestHandler<Statement<?>, ResultSet> subHandler;
+    private final RequestHandler<Statement<?>, ResultSet<Row>> subHandler;
 
-    KeyRequestHandler(RequestHandler<Statement<?>, ResultSet> subHandler) {
+    KeyRequestHandler(RequestHandler<Statement<?>, ResultSet<Row>> subHandler) {
       this.subHandler = subHandler;
     }
 
     @Override
     public Integer handle() {
-      ResultSet result = subHandler.handle();
+      ResultSet<Row> result = subHandler.handle();
       // If not exactly 1 rows were found, return Integer.MIN_VALUE, otherwise return the value.
       if (result.getAvailableWithoutFetching() != 1) {
         return Integer.MIN_VALUE;

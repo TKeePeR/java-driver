@@ -24,6 +24,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
@@ -114,7 +115,7 @@ public class DefaultLoadBalancingPolicyIT {
     for (Statement statement : statements) {
       List<Node> coordinators = new ArrayList<>();
       for (int i = 0; i < 12; i++) {
-        ResultSet rs = sessionRule.session().execute(statement);
+        ResultSet<Row> rs = sessionRule.session().execute(statement);
         Node coordinator = rs.getExecutionInfo().getCoordinator();
         assertThat(coordinator.getDatacenter()).isEqualTo(LOCAL_DC);
         coordinators.add(coordinator);
@@ -155,7 +156,7 @@ public class DefaultLoadBalancingPolicyIT {
       // reasonable distribution:
       Map<Node, Integer> hits = new HashMap<>();
       for (int i = 0; i < 2000; i++) {
-        ResultSet rs = sessionRule.session().execute(statement);
+        ResultSet<Row> rs = sessionRule.session().execute(statement);
         Node coordinator = rs.getExecutionInfo().getCoordinator();
         assertThat(localReplicas).contains(coordinator);
         assertThat(coordinator.getDatacenter()).isEqualTo(LOCAL_DC);
@@ -200,7 +201,7 @@ public class DefaultLoadBalancingPolicyIT {
     for (Statement statement : statements) {
       List<Node> coordinators = new ArrayList<>();
       for (int i = 0; i < 6; i++) {
-        ResultSet rs = sessionRule.session().execute(statement);
+        ResultSet<Row> rs = sessionRule.session().execute(statement);
         Node coordinator = rs.getExecutionInfo().getCoordinator();
         coordinators.add(coordinator);
         assertThat(coordinator.getDatacenter()).isEqualTo(LOCAL_DC);
@@ -247,7 +248,7 @@ public class DefaultLoadBalancingPolicyIT {
       // No routing information => should round-robin on white-listed nodes
       SimpleStatement statement = SimpleStatement.newInstance("SELECT * FROM test.foo WHERE k = 1");
       for (int i = 0; i < 12; i++) {
-        ResultSet rs = session.execute(statement);
+        ResultSet<Row> rs = session.execute(statement);
         Node coordinator = rs.getExecutionInfo().getCoordinator();
         assertThat(coordinator.getConnectAddress()).isNotEqualTo(ignoredAddress);
       }

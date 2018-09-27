@@ -41,7 +41,7 @@ import java.util.List;
  * @see CqlSession#execute(Statement)
  * @see CqlSession#execute(String)
  */
-public interface ResultSet extends Iterable<Row> {
+public interface ResultSet<T> extends Iterable<T> {
 
   /** @return the column definitions contained in this result set. */
   @NonNull
@@ -60,7 +60,7 @@ public interface ResultSet extends Iterable<Row> {
    */
   @NonNull
   default ExecutionInfo getExecutionInfo() {
-    List<ExecutionInfo> infos = getExecutionInfos();
+    List<? extends ExecutionInfo> infos = getExecutionInfos();
     return infos.get(infos.size() - 1);
   }
 
@@ -72,7 +72,7 @@ public interface ResultSet extends Iterable<Row> {
    * background queries to fetch additional pages transparently as the result set is being iterated.
    */
   @NonNull
-  List<ExecutionInfo> getExecutionInfos();
+  List<? extends ExecutionInfo> getExecutionInfos();
 
   /**
    * Returns the next row, or {@code null} if the result set is exhausted.
@@ -81,8 +81,8 @@ public interface ResultSet extends Iterable<Row> {
    * queries.
    */
   @Nullable
-  default Row one() {
-    Iterator<Row> iterator = iterator();
+  default T one() {
+    Iterator<T> iterator = iterator();
     return iterator.hasNext() ? iterator.next() : null;
   }
 
@@ -97,13 +97,13 @@ public interface ResultSet extends Iterable<Row> {
    * return a reasonable number of results.
    */
   @NonNull
-  default List<Row> all() {
+  default List<T> all() {
     if (!iterator().hasNext()) {
       return Collections.emptyList();
     }
     // We can't know the actual size in advance since more pages could be fetched, but we can at
     // least allocate for what we already have.
-    List<Row> result = Lists.newArrayListWithExpectedSize(getAvailableWithoutFetching());
+    List<T> result = Lists.newArrayListWithExpectedSize(getAvailableWithoutFetching());
     Iterables.addAll(result, this);
     return result;
   }

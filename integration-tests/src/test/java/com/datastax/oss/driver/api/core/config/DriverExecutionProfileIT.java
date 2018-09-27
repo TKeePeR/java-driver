@@ -30,6 +30,7 @@ import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.servererrors.ServerError;
 import com.datastax.oss.driver.api.testinfra.ccm.CcmRule;
@@ -222,7 +223,7 @@ public class DriverExecutionProfileIT {
 
       String query = "SELECT * FROM test where k=0";
       // Execute query without profile, should use global page size (100)
-      ResultSet result = session.execute(query);
+      ResultSet<Row> result = session.execute(query);
       assertThat(result.getAvailableWithoutFetching()).isEqualTo(100);
       result.fetchNextPage();
       // next fetch should also be 100 pages.

@@ -21,6 +21,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.testinfra.ccm.CcmRule;
 import com.datastax.oss.driver.api.testinfra.session.SessionRule;
@@ -110,8 +111,8 @@ public class RequestProcessorIT {
       assertThat(prepared.getResultSetDefinitions().contains("v0")).isTrue();
       assertThat(prepared.getResultSetDefinitions().contains("v1")).isTrue();
 
-      ListenableFuture<AsyncResultSet> future = session.executeAsync(prepared.bind());
-      AsyncResultSet result = Uninterruptibles.getUninterruptibly(future);
+      ListenableFuture<AsyncResultSet<Row>> future = session.executeAsync(prepared.bind());
+      AsyncResultSet<Row> result = Uninterruptibles.getUninterruptibly(future);
       assertThat(Iterables.size(result.currentPage())).isEqualTo(100);
     }
   }
@@ -133,8 +134,8 @@ public class RequestProcessorIT {
   @Test
   public void should_use_custom_request_processor_for_executeAsync() throws Exception {
     try (GuavaSession session = newSession(sessionRule.keyspace())) {
-      ListenableFuture<AsyncResultSet> future = session.executeAsync("select * from test");
-      AsyncResultSet result = Uninterruptibles.getUninterruptibly(future);
+      ListenableFuture<AsyncResultSet<Row>> future = session.executeAsync("select * from test");
+      AsyncResultSet<Row> result = Uninterruptibles.getUninterruptibly(future);
       assertThat(Iterables.size(result.currentPage())).isEqualTo(100);
     }
   }

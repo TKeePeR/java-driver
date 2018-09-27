@@ -141,7 +141,7 @@ public class CodecRegistryIT {
         prepared.boundStatementBuilder().setString(0, name.getMethodName()).setInt(1, 2).build();
     sessionRule.session().execute(insert);
 
-    ResultSet result =
+    ResultSet<Row> result =
         sessionRule
             .session()
             .execute(
@@ -180,7 +180,7 @@ public class CodecRegistryIT {
               .build();
       session.execute(insert);
 
-      ResultSet result =
+      ResultSet<Row> result =
           session.execute(
               SimpleStatement.builder("SELECT v from test where k = ?")
                   .addPositionalValue(name.getMethodName())
@@ -333,7 +333,7 @@ public class CodecRegistryIT {
               .build();
       session.execute(insert);
 
-      ResultSet result =
+      ResultSet<Row> result =
           session.execute(
               SimpleStatement.builder("SELECT v from test2 where k0 = ?")
                   .addPositionalValues(name.getMethodName())

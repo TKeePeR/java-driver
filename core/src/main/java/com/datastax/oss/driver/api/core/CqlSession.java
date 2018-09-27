@@ -19,6 +19,7 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.PrepareRequest;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.session.Request;
@@ -42,7 +43,7 @@ public interface CqlSession extends Session {
    * available).
    */
   @NonNull
-  default ResultSet execute(@NonNull Statement<?> statement) {
+  default ResultSet<Row> execute(@NonNull Statement<?> statement) {
     return Objects.requireNonNull(
         execute(statement, Statement.SYNC), "The CQL processor should never return a null result");
   }
@@ -52,7 +53,7 @@ public interface CqlSession extends Session {
    * available).
    */
   @NonNull
-  default ResultSet execute(@NonNull String query) {
+  default ResultSet<Row> execute(@NonNull String query) {
     return execute(SimpleStatement.newInstance(query));
   }
 
@@ -61,7 +62,8 @@ public interface CqlSession extends Session {
    * generally before the result is available).
    */
   @NonNull
-  default CompletionStage<? extends AsyncResultSet> executeAsync(@NonNull Statement<?> statement) {
+  default CompletionStage<? extends AsyncResultSet<Row>> executeAsync(
+      @NonNull Statement<?> statement) {
     return Objects.requireNonNull(
         execute(statement, Statement.ASYNC), "The CQL processor should never return a null result");
   }
@@ -71,7 +73,7 @@ public interface CqlSession extends Session {
    * generally before the result is available).
    */
   @NonNull
-  default CompletionStage<? extends AsyncResultSet> executeAsync(@NonNull String query) {
+  default CompletionStage<? extends AsyncResultSet<Row>> executeAsync(@NonNull String query) {
     return executeAsync(SimpleStatement.newInstance(query));
   }
 

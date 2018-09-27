@@ -25,6 +25,7 @@ import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.connection.FrameTooLongException;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.metrics.DefaultNodeMetric;
@@ -100,7 +101,7 @@ public abstract class CqlRequestHandlerBase implements Throttled {
   private final Queue<Node> queryPlan;
   @NonNull private final DriverExecutionProfile executionProfile;
   private final boolean isIdempotent;
-  protected final CompletableFuture<AsyncResultSet> result;
+  protected final CompletableFuture<AsyncResultSet<Row>> result;
   private final Message message;
   private final EventExecutor scheduler;
   /**
@@ -293,7 +294,7 @@ public abstract class CqlRequestHandlerBase implements Throttled {
     try {
       ExecutionInfo executionInfo =
           buildExecutionInfo(callback, resultMessage, responseFrame, schemaInAgreement);
-      AsyncResultSet resultSet =
+      AsyncResultSet<Row> resultSet =
           Conversions.toResultSet(resultMessage, executionInfo, session, context);
       if (result.complete(resultSet)) {
         cancelScheduledTasks();

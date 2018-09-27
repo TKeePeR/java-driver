@@ -25,6 +25,7 @@ import com.datastax.oss.driver.api.core.AllNodesFailedException;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
@@ -68,7 +69,7 @@ public class NodeTargetingIT {
       Statement statement = SimpleStatement.newInstance("select * system.local").setNode(node);
 
       // when statement is executed
-      ResultSet result = sessionRule.session().execute(statement);
+      ResultSet<Row> result = sessionRule.session().execute(statement);
 
       // then the query should have been sent to the configured node.
       assertThat(result.getExecutionInfo().getCoordinator()).isEqualTo(node);

@@ -54,7 +54,7 @@ public interface Statement<T extends Statement<T>> extends Request {
    * Session#execute(Request, GenericType)}), but CQL statements will generally be run with one of
    * the driver's built-in helper methods (such as {@link CqlSession#execute(Statement)}).
    */
-  GenericType<ResultSet> SYNC = GenericType.of(ResultSet.class);
+  GenericType<ResultSet<Row>> SYNC = new GenericType<ResultSet<Row>>() {};
 
   /**
    * The type returned when a CQL statement is executed asynchronously.
@@ -63,8 +63,8 @@ public interface Statement<T extends Statement<T>> extends Request {
    * Session#execute(Request, GenericType)}), but CQL statements will generally be run with one of
    * the driver's built-in helper methods (such as {@link CqlSession#executeAsync(Statement)}).
    */
-  GenericType<CompletionStage<AsyncResultSet>> ASYNC =
-      new GenericType<CompletionStage<AsyncResultSet>>() {};
+  GenericType<CompletionStage<AsyncResultSet<Row>>> ASYNC =
+      new GenericType<CompletionStage<AsyncResultSet<Row>>>() {};
 
   /**
    * Sets the name of the execution profile that will be used for this statement.

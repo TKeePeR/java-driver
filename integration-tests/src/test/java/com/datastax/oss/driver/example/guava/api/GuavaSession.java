@@ -17,6 +17,7 @@ package com.datastax.oss.driver.example.guava.api;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.session.Session;
@@ -26,17 +27,17 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 public interface GuavaSession extends Session {
 
-  GenericType<ListenableFuture<AsyncResultSet>> ASYNC =
-      new GenericType<ListenableFuture<AsyncResultSet>>() {};
+  GenericType<ListenableFuture<AsyncResultSet<Row>>> ASYNC =
+      new GenericType<ListenableFuture<AsyncResultSet<Row>>>() {};
 
   GenericType<ListenableFuture<PreparedStatement>> ASYNC_PREPARED =
       new GenericType<ListenableFuture<PreparedStatement>>() {};
 
-  default ListenableFuture<AsyncResultSet> executeAsync(Statement<?> statement) {
+  default ListenableFuture<AsyncResultSet<Row>> executeAsync(Statement<?> statement) {
     return this.execute(statement, ASYNC);
   }
 
-  default ListenableFuture<AsyncResultSet> executeAsync(String statement) {
+  default ListenableFuture<AsyncResultSet<Row>> executeAsync(String statement) {
     return this.executeAsync(SimpleStatement.newInstance(statement));
   }
 

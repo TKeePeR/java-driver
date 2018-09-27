@@ -16,6 +16,7 @@
 package com.datastax.oss.driver.internal.core.cql;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.session.Request;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
@@ -28,7 +29,7 @@ import net.jcip.annotations.ThreadSafe;
 
 @ThreadSafe
 public class CqlRequestAsyncProcessor
-    implements RequestProcessor<Statement<?>, CompletionStage<AsyncResultSet>> {
+    implements RequestProcessor<Statement<?>, CompletionStage<AsyncResultSet<Row>>> {
 
   @Override
   public boolean canProcess(Request request, GenericType<?> resultType) {
@@ -36,7 +37,7 @@ public class CqlRequestAsyncProcessor
   }
 
   @Override
-  public RequestHandler<Statement<?>, CompletionStage<AsyncResultSet>> newHandler(
+  public RequestHandler<Statement<?>, CompletionStage<AsyncResultSet<Row>>> newHandler(
       Statement<?> request,
       DefaultSession session,
       InternalDriverContext context,

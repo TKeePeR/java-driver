@@ -85,7 +85,7 @@ public class AsyncResultSetIT {
   public void should_only_iterate_over_rows_in_current_page() throws Exception {
     // very basic test that just ensures that iterating over an AsyncResultSet only visits the first
     // page.
-    CompletionStage<? extends AsyncResultSet> result =
+    CompletionStage<? extends AsyncResultSet<Row>> result =
         sessionRule
             .session()
             .executeAsync(
@@ -93,7 +93,7 @@ public class AsyncResultSetIT {
                     .addPositionalValue(PARTITION_KEY1)
                     .build());
 
-    AsyncResultSet rs = result.toCompletableFuture().get();
+    AsyncResultSet<Row> rs = result.toCompletableFuture().get();
 
     // Should only receive rows in page.
     assertThat(rs.remaining()).isEqualTo(PAGE_SIZE);
@@ -153,7 +153,7 @@ public class AsyncResultSetIT {
   }
 
   private static class AsyncResultSetConsumingFunction
-      implements Function<AsyncResultSet, CompletionStage<PageStatistics>> {
+      implements Function<AsyncResultSet<Row>, CompletionStage<PageStatistics>> {
 
     // number of rows paged before exercising this function.
     private final int rowsSoFar;
@@ -170,7 +170,7 @@ public class AsyncResultSetIT {
     }
 
     @Override
-    public CompletionStage<PageStatistics> apply(AsyncResultSet result) {
+    public CompletionStage<PageStatistics> apply(AsyncResultSet<Row> result) {
       int consumedRows = rowsSoFar;
 
       // Only count page if it has rows.

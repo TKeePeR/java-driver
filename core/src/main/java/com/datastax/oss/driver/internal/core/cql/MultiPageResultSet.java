@@ -33,13 +33,13 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class MultiPageResultSet implements ResultSet {
+public class MultiPageResultSet implements ResultSet<Row> {
 
   private final RowIterator iterator;
   private final List<ExecutionInfo> executionInfos = new ArrayList<>();
   private ColumnDefinitions columnDefinitions;
 
-  public MultiPageResultSet(@NonNull AsyncResultSet firstPage) {
+  public MultiPageResultSet(@NonNull AsyncResultSet<Row> firstPage) {
     assert firstPage.hasMorePages();
     this.iterator = new RowIterator(firstPage);
     this.executionInfos.add(firstPage.getExecutionInfo());
@@ -86,10 +86,10 @@ public class MultiPageResultSet implements ResultSet {
 
   private class RowIterator extends CountingIterator<Row> {
     // The pages fetched so far. The first is the one we're currently iterating.
-    private Deque<AsyncResultSet> pages = new ArrayDeque<>();
+    private final Deque<AsyncResultSet<Row>> pages = new ArrayDeque<>();
     private Iterator<Row> currentRows;
 
-    private RowIterator(AsyncResultSet firstPage) {
+    private RowIterator(AsyncResultSet<Row> firstPage) {
       super(firstPage.remaining());
       this.pages.add(firstPage);
       this.currentRows = firstPage.currentPage().iterator();
@@ -107,7 +107,7 @@ public class MultiPageResultSet implements ResultSet {
         // We've just finished iterating the current page, remove it
         pages.removeFirst();
         if (!pages.isEmpty()) {
-          AsyncResultSet nextPage = pages.getFirst();
+          AsyncResultSet<Row> nextPage = pages.getFirst();
           // The definitions can change from page to page if this result set was built from a bound
           // 'SELECT *', and the schema was altered.
           columnDefinitions = nextPage.getColumnDefinitions();
@@ -122,10 +122,10 @@ public class MultiPageResultSet implements ResultSet {
 
     private void fetchNextPage() {
       if (!pages.isEmpty()) {
-        AsyncResultSet lastPage = pages.getLast();
+        AsyncResultSet<Row> lastPage = pages.getLast();
         if (lastPage.hasMorePages()) {
           BlockingOperation.checkNotDriverThread();
-          AsyncResultSet nextPage =
+          AsyncResultSet<Row> nextPage =
               CompletableFutures.getUninterruptibly(pages.getLast().fetchNextPage());
           executionInfos.add(nextPage.getExecutionInfo());
           pages.offer(nextPage);

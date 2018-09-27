@@ -27,6 +27,7 @@ import com.datastax.oss.driver.api.core.config.DriverConfig;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.servererrors.CoordinatorException;
@@ -78,7 +79,7 @@ public class PerProfileRetryPolicyIT {
                   .build())
           .build();
 
-  private static String QUERY_STRING = "select * from foo";
+  private static final String QUERY_STRING = "select * from foo";
   private static final SimpleStatement QUERY = SimpleStatement.newInstance(QUERY_STRING);
 
   @Before
@@ -129,7 +130,8 @@ public class PerProfileRetryPolicyIT {
   public void should_use_policy_from_config_when_not_configured_in_request_profile() {
     // since profile2 has no configured retry policy, it should defer to configuration which uses
     // DefaultRetryPolicy, which should try request on next host (host 1).
-    ResultSet result = sessionRule.session().execute(QUERY.setExecutionProfileName("profile2"));
+    ResultSet<Row> result =
+        sessionRule.session().execute(QUERY.setExecutionProfileName("profile2"));
 
     // expect an unavailable exception to be present in errors.
     List<Map.Entry<Node, Throwable>> errors = result.getExecutionInfo().getErrors();

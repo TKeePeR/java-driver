@@ -150,7 +150,7 @@ public abstract class TokenITBase {
    */
   @Test
   public void should_get_token_from_row_and_set_token_in_query() {
-    ResultSet rs = session().execute("SELECT token(i) FROM foo WHERE i = 1");
+    ResultSet<Row> rs = session().execute("SELECT token(i) FROM foo WHERE i = 1");
     Row row = rs.one();
 
     // Get by index:

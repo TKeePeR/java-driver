@@ -23,6 +23,7 @@ import com.datastax.oss.driver.api.core.config.DriverConfig;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
@@ -65,7 +66,7 @@ public class PerProfileLoadBalancingPolicyIT {
                   .build())
           .build();
 
-  private static String QUERY_STRING = "select * from foo";
+  private static final String QUERY_STRING = "select * from foo";
   private static final SimpleStatement QUERY = SimpleStatement.newInstance(QUERY_STRING);
 
   @Before
@@ -107,7 +108,7 @@ public class PerProfileLoadBalancingPolicyIT {
     // Since profile1 uses dc3 as localDC, only those nodes should receive these queries.
     Statement statement = QUERY.setExecutionProfileName("profile1");
     for (int i = 0; i < 10; i++) {
-      ResultSet result = sessionRule.session().execute(statement);
+      ResultSet<Row> result = sessionRule.session().execute(statement);
       assertThat(result.getExecutionInfo().getCoordinator().getDatacenter()).isEqualTo("dc3");
     }
 
@@ -121,7 +122,7 @@ public class PerProfileLoadBalancingPolicyIT {
     // Since profile2 does not define an lbp config, it should use default which uses dc1.
     Statement statement = QUERY.setExecutionProfileName("profile2");
     for (int i = 0; i < 10; i++) {
-      ResultSet result = sessionRule.session().execute(statement);
+      ResultSet<Row> result = sessionRule.session().execute(statement);
       assertThat(result.getExecutionInfo().getCoordinator().getDatacenter()).isEqualTo("dc1");
     }
 

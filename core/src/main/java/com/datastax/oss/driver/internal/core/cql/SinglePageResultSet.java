@@ -27,10 +27,10 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class SinglePageResultSet implements ResultSet {
-  private final AsyncResultSet onlyPage;
+public class SinglePageResultSet implements ResultSet<Row> {
+  private final AsyncResultSet<Row> onlyPage;
 
-  public SinglePageResultSet(AsyncResultSet onlyPage) {
+  public SinglePageResultSet(AsyncResultSet<Row> onlyPage) {
     this.onlyPage = onlyPage;
     assert !onlyPage.hasMorePages();
   }

@@ -72,7 +72,7 @@ public class BoundStatementIT {
 
   @ClassRule public static CcmRule ccm = CcmRule.getInstance();
 
-  private static boolean atLeastV4 = ccm.getHighestProtocolVersion().getCode() >= 4;
+  private static final boolean atLeastV4 = ccm.getHighestProtocolVersion().getCode() >= 4;
 
   @ClassRule
   public static SessionRule<CqlSession> sessionRule =
@@ -202,7 +202,7 @@ public class BoundStatementIT {
 
       assertThat(prepared.getResultSetDefinitions()).hasSize(0);
 
-      ResultSet rs = session.execute(prepared.bind(name.getMethodName(), VALUE));
+      ResultSet<Row> rs = session.execute(prepared.bind(name.getMethodName(), VALUE));
       assertThat(rs.getColumnDefinitions()).hasSize(0);
     }
   }
@@ -228,7 +228,7 @@ public class BoundStatementIT {
               prepared.boundStatementBuilder(name.getMethodName(), "42").build())) {
 
         session.execute(boundStatement);
-        ResultSet rs =
+        ResultSet<Row> rs =
             session.execute(
                 SimpleStatement.newInstance(
                     "SELECT v0 FROM test2 WHERE k = ?", name.getMethodName()));
@@ -242,7 +242,7 @@ public class BoundStatementIT {
     try (CqlSession session = SessionUtils.newSession(ccm, sessionRule.keyspace())) {
       SimpleStatement st = SimpleStatement.builder("SELECT v FROM test").withPageSize(10).build();
       PreparedStatement prepared = session.prepare(st);
-      ResultSet result = session.execute(prepared.bind());
+      ResultSet<Row> result = session.execute(prepared.bind());
 
       // Should have only fetched 10 (page size) rows.
       assertThat(result.getAvailableWithoutFetching()).isEqualTo(10);
@@ -256,7 +256,7 @@ public class BoundStatementIT {
       // overridden by bound statement.
       SimpleStatement st = SimpleStatement.builder("SELECT v FROM test").withPageSize(10).build();
       PreparedStatement prepared = session.prepare(st);
-      ResultSet result = session.execute(prepared.bind().setPageSize(12));
+      ResultSet<Row> result = session.execute(prepared.bind().setPageSize(12));
 
       // Should have only fetched 10 (page size) rows.
       assertThat(result.getAvailableWithoutFetching()).isEqualTo(12);
@@ -475,7 +475,7 @@ public class BoundStatementIT {
 
     // Verify that no tombstone was written by reading data back and ensuring initial value is
     // retained.
-    ResultSet result =
+    ResultSet<Row> result =
         session.execute(
             SimpleStatement.builder("SELECT v0 from test2 where k = ?")
                 .addPositionalValue(valueName)

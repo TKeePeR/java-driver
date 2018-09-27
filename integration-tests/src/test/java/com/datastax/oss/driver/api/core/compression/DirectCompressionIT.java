@@ -88,13 +88,13 @@ public class DirectCompressionIT {
     try (CqlSession session =
         SessionUtils.newSession(ccmRule, schemaSessionRule.keyspace(), loader)) {
       // Run a couple of simple test queries
-      ResultSet rs =
+      ResultSet<Row> rs =
           session.execute(
               SimpleStatement.newInstance(
                   "INSERT INTO test (k, t, i, f) VALUES (?, ?, ?, ?)", "key", "foo", 42, 24.03f));
       assertThat(rs.iterator().hasNext()).isFalse();
 
-      ResultSet rs1 = session.execute("SELECT * FROM test WHERE k = 'key'");
+      ResultSet<Row> rs1 = session.execute("SELECT * FROM test WHERE k = 'key'");
       assertThat(rs1.iterator().hasNext()).isTrue();
       Row row = rs1.iterator().next();
       assertThat(rs1.iterator().hasNext()).isFalse();

@@ -26,6 +26,7 @@ import com.datastax.oss.driver.internal.core.util.CountingIterator;
 import com.datastax.oss.driver.shaded.guava.common.collect.Lists;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -37,15 +38,16 @@ public class ResultSetsTest {
   @Test
   public void should_create_result_set_from_single_page() {
     // Given
-    AsyncResultSet page1 = mockPage(false, 0, 1, 2);
+    AsyncResultSet<Row> page1 = mockPage(false, 0, 1, 2);
 
     // When
-    ResultSet resultSet = ResultSets.newInstance(page1);
+    ResultSet<Row> resultSet = ResultSets.newInstance(page1);
 
     // Then
     assertThat(resultSet.getColumnDefinitions()).isSameAs(page1.getColumnDefinitions());
     assertThat(resultSet.getExecutionInfo()).isSameAs(page1.getExecutionInfo());
-    assertThat(resultSet.getExecutionInfos()).containsExactly(page1.getExecutionInfo());
+    assertThat(((List<ExecutionInfo>) resultSet.getExecutionInfos()))
+        .containsExactly(page1.getExecutionInfo());
     assertThat(resultSet.isFullyFetched()).isTrue();
     assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(3);
 
@@ -66,15 +68,15 @@ public class ResultSetsTest {
   @Test
   public void should_create_result_set_from_multiple_pages() {
     // Given
-    AsyncResultSet page1 = mockPage(true, 0, 1, 2);
-    AsyncResultSet page2 = mockPage(true, 3, 4, 5);
-    AsyncResultSet page3 = mockPage(false, 6, 7, 8);
+    AsyncResultSet<Row> page1 = mockPage(true, 0, 1, 2);
+    AsyncResultSet<Row> page2 = mockPage(true, 3, 4, 5);
+    AsyncResultSet<Row> page3 = mockPage(false, 6, 7, 8);
 
     complete(page1.fetchNextPage(), page2);
     complete(page2.fetchNextPage(), page3);
 
     // When
-    ResultSet resultSet = ResultSets.newInstance(page1);
+    ResultSet<Row> resultSet = ResultSets.newInstance(page1);
 
     // Then
     assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(3);
@@ -82,7 +84,8 @@ public class ResultSetsTest {
 
     assertThat(resultSet.getColumnDefinitions()).isSameAs(page1.getColumnDefinitions());
     assertThat(resultSet.getExecutionInfo()).isSameAs(page1.getExecutionInfo());
-    assertThat(resultSet.getExecutionInfos()).containsExactly(page1.getExecutionInfo());
+    assertThat(((List<ExecutionInfo>) resultSet.getExecutionInfos()))
+        .containsExactly(page1.getExecutionInfo());
     assertThat(resultSet.isFullyFetched()).isFalse();
     assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(3);
 
@@ -100,7 +103,7 @@ public class ResultSetsTest {
     assertThat(iterator.hasNext()).isTrue();
     // This should have triggered the fetch of page2
     assertThat(resultSet.getExecutionInfo()).isEqualTo(page2.getExecutionInfo());
-    assertThat(resultSet.getExecutionInfos())
+    assertThat(((List<ExecutionInfo>) resultSet.getExecutionInfos()))
         .containsExactly(page1.getExecutionInfo(), page2.getExecutionInfo());
     assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(3);
 
@@ -116,7 +119,7 @@ public class ResultSetsTest {
     assertThat(iterator.hasNext()).isTrue();
     // This should have triggered the fetch of page3
     assertThat(resultSet.getExecutionInfo()).isEqualTo(page3.getExecutionInfo());
-    assertThat(resultSet.getExecutionInfos())
+    assertThat(((List<ExecutionInfo>) resultSet.getExecutionInfos()))
         .containsExactly(
             page1.getExecutionInfo(), page2.getExecutionInfo(), page3.getExecutionInfo());
     assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(3);
@@ -134,20 +137,20 @@ public class ResultSetsTest {
   @Test
   public void should_fetch_multiple_pages_in_advance() {
     // Given
-    AsyncResultSet page1 = mockPage(true, 0, 1, 2);
-    AsyncResultSet page2 = mockPage(true, 3, 4, 5);
-    AsyncResultSet page3 = mockPage(false, 6, 7, 8);
+    AsyncResultSet<Row> page1 = mockPage(true, 0, 1, 2);
+    AsyncResultSet<Row> page2 = mockPage(true, 3, 4, 5);
+    AsyncResultSet<Row> page3 = mockPage(false, 6, 7, 8);
 
     complete(page1.fetchNextPage(), page2);
     complete(page2.fetchNextPage(), page3);
 
     // When
-    ResultSet resultSet = ResultSets.newInstance(page1);
+    ResultSet<Row> resultSet = ResultSets.newInstance(page1);
     resultSet.fetchNextPage();
 
     // Then
     assertThat(resultSet.getExecutionInfo()).isEqualTo(page2.getExecutionInfo());
-    assertThat(resultSet.getExecutionInfos())
+    assertThat(((List<ExecutionInfo>) resultSet.getExecutionInfos()))
         .containsExactly(page1.getExecutionInfo(), page2.getExecutionInfo());
     assertThat(resultSet.iterator().hasNext()).isTrue();
     assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(6);
@@ -157,7 +160,7 @@ public class ResultSetsTest {
 
     // Then
     assertThat(resultSet.getExecutionInfo()).isEqualTo(page3.getExecutionInfo());
-    assertThat(resultSet.getExecutionInfos())
+    assertThat(((List<ExecutionInfo>) resultSet.getExecutionInfos()))
         .containsExactly(
             page1.getExecutionInfo(), page2.getExecutionInfo(), page3.getExecutionInfo());
     assertThat(resultSet.iterator().hasNext()).isTrue();
@@ -191,8 +194,8 @@ public class ResultSetsTest {
     assertThat(row0.getInt(0)).isEqualTo(expectedValue);
   }
 
-  private AsyncResultSet mockPage(boolean nextPage, Integer... data) {
-    AsyncResultSet page = Mockito.mock(AsyncResultSet.class);
+  private AsyncResultSet<Row> mockPage(boolean nextPage, Integer... data) {
+    AsyncResultSet<Row> page = Mockito.mock(AsyncResultSet.class);
 
     ColumnDefinitions columnDefinitions = Mockito.mock(ColumnDefinitions.class);
     Mockito.when(page.getColumnDefinitions()).thenReturn(columnDefinitions);
@@ -232,9 +235,9 @@ public class ResultSetsTest {
   }
 
   private static void complete(
-      CompletionStage<? extends AsyncResultSet> stage, AsyncResultSet result) {
+      CompletionStage<? extends AsyncResultSet<Row>> stage, AsyncResultSet<Row> result) {
     @SuppressWarnings("unchecked")
-    CompletableFuture<AsyncResultSet> future = (CompletableFuture<AsyncResultSet>) stage;
+    CompletableFuture<AsyncResultSet<Row>> future = (CompletableFuture<AsyncResultSet<Row>>) stage;
     future.complete(result);
   }
 }

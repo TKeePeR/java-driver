@@ -17,9 +17,10 @@ package com.datastax.oss.driver.internal.core.cql;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 public class ResultSets {
-  public static ResultSet newInstance(AsyncResultSet firstPage) {
+  public static ResultSet<Row> newInstance(AsyncResultSet<Row> firstPage) {
     return (firstPage.hasMorePages())
         ? new MultiPageResultSet(firstPage)
         : new SinglePageResultSet(firstPage);

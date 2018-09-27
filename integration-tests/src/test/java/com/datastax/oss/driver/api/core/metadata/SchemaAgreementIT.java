@@ -21,6 +21,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.testinfra.ccm.CustomCcmRule;
 import com.datastax.oss.driver.api.testinfra.loadbalancing.SortingLoadBalancingPolicy;
 import com.datastax.oss.driver.api.testinfra.session.SessionRule;
@@ -35,8 +36,8 @@ import org.junit.rules.TestName;
 
 public class SchemaAgreementIT {
 
-  private static CustomCcmRule ccm = CustomCcmRule.builder().withNodes(3).build();
-  private static SessionRule<CqlSession> sessionRule =
+  private static final CustomCcmRule ccm = CustomCcmRule.builder().withNodes(3).build();
+  private static final SessionRule<CqlSession> sessionRule =
       SessionRule.builder(ccm)
           .withConfigLoader(
               SessionUtils.configLoaderBuilder()
@@ -56,7 +57,7 @@ public class SchemaAgreementIT {
 
   @Test
   public void should_succeed_when_all_nodes_agree() {
-    ResultSet result = createTable();
+    ResultSet<Row> result = createTable();
 
     assertThat(result.getExecutionInfo().isSchemaInAgreement()).isTrue();
     assertThat(sessionRule.session().checkSchemaAgreement()).isTrue();
@@ -67,7 +68,7 @@ public class SchemaAgreementIT {
     ccm.getCcmBridge().pause(2);
     try {
       // Can't possibly agree since one node is paused.
-      ResultSet result = createTable();
+      ResultSet<Row> result = createTable();
 
       assertThat(result.getExecutionInfo().isSchemaInAgreement()).isFalse();
       assertThat(sessionRule.session().checkSchemaAgreement()).isFalse();
@@ -81,7 +82,7 @@ public class SchemaAgreementIT {
     ccm.getCcmBridge().stop(2);
     try {
       // Should agree since up hosts should agree.
-      ResultSet result = createTable();
+      ResultSet<Row> result = createTable();
 
       assertThat(result.getExecutionInfo().isSchemaInAgreement()).isTrue();
       assertThat(sessionRule.session().checkSchemaAgreement()).isTrue();
@@ -99,7 +100,7 @@ public class SchemaAgreementIT {
                 DefaultDriverOption.CONTROL_CONNECTION_AGREEMENT_TIMEOUT, Duration.ofSeconds(0))
             .build();
     try (CqlSession session = SessionUtils.newSession(ccm, sessionRule.keyspace(), loader)) {
-      ResultSet result = createTable(session);
+      ResultSet<Row> result = createTable(session);
 
       // Should not agree because schema metadata is disabled
       assertThat(result.getExecutionInfo().isSchemaInAgreement()).isFalse();
@@ -107,13 +108,13 @@ public class SchemaAgreementIT {
     }
   }
 
-  private ResultSet createTable() {
+  private ResultSet<Row> createTable() {
     return createTable(sessionRule.session());
   }
 
   private final AtomicInteger tableCounter = new AtomicInteger();
 
-  private ResultSet createTable(CqlSession session) {
+  private ResultSet<Row> createTable(CqlSession session) {
     String tableName = name.getMethodName();
     if (tableName.length() > 48) {
       tableName = tableName.substring(0, 44) + tableCounter.getAndIncrement();

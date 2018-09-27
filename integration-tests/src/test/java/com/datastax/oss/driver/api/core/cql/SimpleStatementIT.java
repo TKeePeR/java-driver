@@ -112,7 +112,7 @@ public class SimpleStatementIT {
   public void should_use_paging_state_when_copied() {
     Statement<?> st =
         SimpleStatement.builder(String.format("SELECT v FROM test WHERE k='%s'", KEY)).build();
-    ResultSet result = sessionRule.session().execute(st);
+    ResultSet<Row> result = sessionRule.session().execute(st);
 
     // given a query created from a copy of a previous query with paging state from previous queries
     // response.
@@ -129,7 +129,7 @@ public class SimpleStatementIT {
   public void should_use_paging_state_when_provided_to_new_statement() {
     Statement<?> st =
         SimpleStatement.builder(String.format("SELECT v FROM test WHERE k='%s'", KEY)).build();
-    ResultSet result = sessionRule.session().execute(st);
+    ResultSet<Row> result = sessionRule.session().execute(st);
 
     // given a query created from a copy of a previous query with paging state from previous queries
     // response.
@@ -150,7 +150,7 @@ public class SimpleStatementIT {
   public void should_fail_if_using_paging_state_from_different_query() {
     Statement<?> st =
         SimpleStatement.builder("SELECT v FROM test WHERE k=:k").addNamedValue("k", KEY).build();
-    ResultSet result = sessionRule.session().execute(st);
+    ResultSet<Row> result = sessionRule.session().execute(st);
 
     // TODO Expect PagingStateException
 
@@ -179,7 +179,7 @@ public class SimpleStatementIT {
             .addPositionalValue(name.getMethodName())
             .build();
 
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(1);
 
     // then the writetime should equal the timestamp provided.
@@ -192,7 +192,7 @@ public class SimpleStatementIT {
   public void should_use_tracing_when_set() {
     // TODO currently there's no way to validate tracing was set since trace id is not set
     // also write test to verify it is not set.
-    ResultSet result =
+    ResultSet<Row> result =
         sessionRule
             .session()
             .execute(SimpleStatement.builder("select * from test").withTracing().build());
@@ -216,7 +216,7 @@ public class SimpleStatementIT {
             .addPositionalValue(name.getMethodName())
             .build();
 
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(1);
 
     Row row = result.iterator().next();
@@ -242,7 +242,7 @@ public class SimpleStatementIT {
             .addPositionalValue(name.getMethodName())
             .build();
 
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(1);
 
     Row row = result.iterator().next();
@@ -296,7 +296,7 @@ public class SimpleStatementIT {
             .addNamedValue("k", name.getMethodName())
             .build();
 
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(1);
 
     Row row = result.iterator().next();
@@ -322,7 +322,7 @@ public class SimpleStatementIT {
             .addNamedValue("k", name.getMethodName())
             .build();
 
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(1);
 
     Row row = result.iterator().next();
@@ -373,7 +373,7 @@ public class SimpleStatementIT {
   @Test
   public void should_use_page_size() {
     Statement<?> st = SimpleStatement.builder("SELECT v FROM test").withPageSize(10).build();
-    ResultSet result = sessionRule.session().execute(st);
+    ResultSet<Row> result = sessionRule.session().execute(st);
 
     // Should have only fetched 10 (page size) rows.
     assertThat(result.getAvailableWithoutFetching()).isEqualTo(10);

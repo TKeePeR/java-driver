@@ -619,7 +619,7 @@ public class DataTypeIT {
       Statement<?> select, DataType dataType, K value, K expectedPrimitiveValue) {
     TypeCodec<Object> codec =
         sessionRule.session().getContext().getCodecRegistry().codecFor(dataType);
-    ResultSet result = sessionRule.session().execute(select);
+    ResultSet<Row> result = sessionRule.session().execute(select);
 
     String columnName = columnNameFor(dataType);
 

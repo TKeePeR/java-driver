@@ -27,6 +27,7 @@ import com.datastax.oss.driver.api.core.config.DriverConfig;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.testinfra.loadbalancing.SortingLoadBalancingPolicy;
 import com.datastax.oss.driver.api.testinfra.session.SessionUtils;
@@ -51,7 +52,7 @@ public class SpeculativeExecutionIT {
   // Note: it looks like shorter delays cause precision issues with Netty timers
   private static final long SPECULATIVE_DELAY = 500;
 
-  private static String QUERY_STRING = "select * from foo";
+  private static final String QUERY_STRING = "select * from foo";
   private static final SimpleStatement QUERY = SimpleStatement.newInstance(QUERY_STRING);
 
   // Shared across all tests methods.
@@ -70,7 +71,7 @@ public class SpeculativeExecutionIT {
         0, when(QUERY_STRING).then(noRows()).delay(3 * SPECULATIVE_DELAY, TimeUnit.MILLISECONDS));
 
     try (CqlSession session = buildSession(2, SPECULATIVE_DELAY)) {
-      ResultSet resultSet = session.execute(QUERY.setIdempotent(false));
+      ResultSet<Row> resultSet = session.execute(QUERY.setIdempotent(false));
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(0);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(0);
@@ -88,7 +89,7 @@ public class SpeculativeExecutionIT {
     primeNode(1, when(QUERY_STRING).then(noRows()));
 
     try (CqlSession session = buildSession(2, SPECULATIVE_DELAY)) {
-      ResultSet resultSet = session.execute(QUERY);
+      ResultSet<Row> resultSet = session.execute(QUERY);
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(1);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(1);
@@ -107,7 +108,7 @@ public class SpeculativeExecutionIT {
         1, when(QUERY_STRING).then(noRows()).delay(3 * SPECULATIVE_DELAY, TimeUnit.MILLISECONDS));
 
     try (CqlSession session = buildSession(2, SPECULATIVE_DELAY)) {
-      ResultSet resultSet = session.execute(QUERY);
+      ResultSet<Row> resultSet = session.execute(QUERY);
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(0);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(1);
@@ -127,7 +128,7 @@ public class SpeculativeExecutionIT {
     primeNode(2, when(QUERY_STRING).then(noRows()));
 
     try (CqlSession session = buildSession(3, SPECULATIVE_DELAY)) {
-      ResultSet resultSet = session.execute(QUERY);
+      ResultSet<Row> resultSet = session.execute(QUERY);
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(2);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(2);
@@ -145,7 +146,7 @@ public class SpeculativeExecutionIT {
     primeNode(1, when(QUERY_STRING).then(noRows()));
 
     try (CqlSession session = buildSession(3, SPECULATIVE_DELAY)) {
-      ResultSet resultSet = session.execute(QUERY);
+      ResultSet<Row> resultSet = session.execute(QUERY);
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(0);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(0);
@@ -165,7 +166,7 @@ public class SpeculativeExecutionIT {
     primeNode(2, when(QUERY_STRING).then(noRows()));
 
     try (CqlSession session = buildSession(3, SPECULATIVE_DELAY)) {
-      ResultSet resultSet = session.execute(QUERY);
+      ResultSet<Row> resultSet = session.execute(QUERY);
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(1);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(1);
@@ -186,7 +187,7 @@ public class SpeculativeExecutionIT {
     primeNode(2, when(QUERY_STRING).then(isBootstrapping()));
 
     try (CqlSession session = buildSession(2, SPECULATIVE_DELAY)) {
-      ResultSet resultSet = session.execute(QUERY);
+      ResultSet<Row> resultSet = session.execute(QUERY);
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(0);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(1);
@@ -227,7 +228,7 @@ public class SpeculativeExecutionIT {
     primeNode(2, when(QUERY_STRING).then(noRows()).delay(SPECULATIVE_DELAY, TimeUnit.MILLISECONDS));
 
     try (CqlSession session = buildSession(3, 0)) {
-      ResultSet resultSet = session.execute(QUERY);
+      ResultSet<Row> resultSet = session.execute(QUERY);
 
       assertThat(resultSet.getExecutionInfo().getSuccessfulExecutionIndex()).isEqualTo(2);
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(2);
@@ -248,7 +249,7 @@ public class SpeculativeExecutionIT {
 
     // Set large delay for default so we ensure profile is used.
     try (CqlSession session = buildSessionWithProfile(3, 100, 2, 0)) {
-      ResultSet resultSet = session.execute(QUERY.setExecutionProfileName("profile1"));
+      ResultSet<Row> resultSet = session.execute(QUERY.setExecutionProfileName("profile1"));
 
       // Expect only 1 speculative execution as that is all profile called for.
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(1);
@@ -270,7 +271,7 @@ public class SpeculativeExecutionIT {
 
     // Disable in primary configuration
     try (CqlSession session = buildSessionWithProfile(-1, -1, 3, 0)) {
-      ResultSet resultSet = session.execute(QUERY.setExecutionProfileName("profile1"));
+      ResultSet<Row> resultSet = session.execute(QUERY.setExecutionProfileName("profile1"));
 
       // Expect speculative executions on each node.
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(2);
@@ -292,7 +293,7 @@ public class SpeculativeExecutionIT {
 
     try (CqlSession session = buildSessionWithProfile(3, 0, 3, 0)) {
       // use profile where speculative execution is not configured.
-      ResultSet resultSet = session.execute(QUERY.setExecutionProfileName("profile2"));
+      ResultSet<Row> resultSet = session.execute(QUERY.setExecutionProfileName("profile2"));
 
       // Expect speculative executions on each node since default configuration is used.
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(2);
@@ -314,7 +315,7 @@ public class SpeculativeExecutionIT {
 
     // Disable in profile
     try (CqlSession session = buildSessionWithProfile(3, 100, -1, -1)) {
-      ResultSet resultSet = session.execute(QUERY.setExecutionProfileName("profile1"));
+      ResultSet<Row> resultSet = session.execute(QUERY.setExecutionProfileName("profile1"));
 
       // Expect no speculative executions.
       assertThat(resultSet.getExecutionInfo().getSpeculativeExecutionCount()).isEqualTo(0);

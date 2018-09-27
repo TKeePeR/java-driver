@@ -32,6 +32,7 @@ import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
 import com.datastax.oss.driver.api.core.cql.PrepareRequest;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
@@ -309,7 +310,7 @@ public class Conversions {
     }
   }
 
-  public static AsyncResultSet toResultSet(
+  public static AsyncResultSet<Row> toResultSet(
       Result result,
       ExecutionInfo executionInfo,
       CqlSession session,

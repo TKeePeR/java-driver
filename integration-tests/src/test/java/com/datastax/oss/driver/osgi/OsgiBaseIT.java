@@ -62,7 +62,7 @@ public abstract class OsgiBaseIT {
             .withClassLoader(CqlSession.class.getClassLoader())
             .withConfigLoader(configLoader());
     try (CqlSession session = builder.build()) {
-      ResultSet result = session.execute(selectFrom("system", "local").all().build());
+      ResultSet<Row> result = session.execute(selectFrom("system", "local").all().build());
 
       assertThat(result.getAvailableWithoutFetching()).isEqualTo(1);
 

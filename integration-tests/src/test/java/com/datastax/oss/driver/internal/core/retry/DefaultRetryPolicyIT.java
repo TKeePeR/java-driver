@@ -39,6 +39,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.connection.ClosedConnectionException;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.servererrors.DefaultWriteType;
@@ -86,14 +87,15 @@ public class DefaultRetryPolicyIT {
                   .build())
           .build();
 
-  private static String queryStr = "select * from foo";
+  private static final String queryStr = "select * from foo";
   private static final SimpleStatement query = SimpleStatement.builder(queryStr).build();
 
-  private ArgumentCaptor<ILoggingEvent> loggingEventCaptor =
+  private final ArgumentCaptor<ILoggingEvent> loggingEventCaptor =
       ArgumentCaptor.forClass(ILoggingEvent.class);
 
   @SuppressWarnings("unchecked")
-  private Appender<ILoggingEvent> appender = (Appender<ILoggingEvent>) Mockito.mock(Appender.class);
+  private final Appender<ILoggingEvent> appender =
+      (Appender<ILoggingEvent>) Mockito.mock(Appender.class);
 
   private Logger logger;
   private Level oldLevel;
@@ -241,7 +243,7 @@ public class DefaultRetryPolicyIT {
                 .then(closeConnection(DisconnectAction.Scope.CONNECTION, CloseType.DISCONNECT)));
 
     // when executing a query.
-    ResultSet result = sessionRule.session().execute(query);
+    ResultSet<Row> result = sessionRule.session().execute(query);
     // then we should get a response, and the execution info on the result set indicates there was
     // an error on
     // the host that received the query.
@@ -447,7 +449,7 @@ public class DefaultRetryPolicyIT {
     simulacron.cluster().node(0).prime(when(queryStr).then(unavailable(LOCAL_QUORUM, 3, 0)));
 
     // when executing a query.
-    ResultSet result = sessionRule.session().execute(queryStr);
+    ResultSet<Row> result = sessionRule.session().execute(queryStr);
     // then we should get a response, and the execution info on the result set indicates there was
     // an error on
     // the host that received the query.

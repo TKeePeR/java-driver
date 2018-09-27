@@ -34,6 +34,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.servererrors.ServerError;
 import com.datastax.oss.driver.api.testinfra.session.SessionRule;
@@ -300,7 +301,7 @@ public class RequestLoggerIT {
         .prime(when(QUERY).then(rows().row("release_version", "3.0.0")));
 
     // When
-    ResultSet set = sessionRuleNode.session().execute(QUERY);
+    ResultSet<Row> set = sessionRuleNode.session().execute(QUERY);
 
     // Then
     Mockito.verify(appender, new Timeout(500, VerificationModeFactory.times(3)))
@@ -327,7 +328,7 @@ public class RequestLoggerIT {
         .prime(when(QUERY).then(rows().row("release_version", "3.0.0")));
 
     // When
-    ResultSet set = sessionRuleNode.session().execute(QUERY);
+    ResultSet<Row> set = sessionRuleNode.session().execute(QUERY);
 
     // Then
     Mockito.verify(appender, new Timeout(500, VerificationModeFactory.times(2)))

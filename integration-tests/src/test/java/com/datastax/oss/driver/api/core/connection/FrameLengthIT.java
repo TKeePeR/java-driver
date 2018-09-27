@@ -27,6 +27,7 @@ import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.retry.RetryDecision;
 import com.datastax.oss.driver.api.core.session.Request;
@@ -52,7 +53,7 @@ public class FrameLengthIT {
   public static @ClassRule SimulacronRule simulacron =
       new SimulacronRule(ClusterSpec.builder().withNodes(1));
 
-  private static DriverConfigLoader loader =
+  private static final DriverConfigLoader loader =
       SessionUtils.configLoaderBuilder()
           .withClass(
               DefaultDriverOption.LOAD_BALANCING_POLICY_CLASS, SortingLoadBalancingPolicy.class)
@@ -92,7 +93,7 @@ public class FrameLengthIT {
 
   @Test
   public void should_fail_if_response_exceeds_max_frame_length() {
-    CompletionStage<? extends AsyncResultSet> slowResultFuture =
+    CompletionStage<? extends AsyncResultSet<Row>> slowResultFuture =
         sessionRule.session().executeAsync(SLOW_QUERY);
     try {
       sessionRule.session().execute(LARGE_QUERY);

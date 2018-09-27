@@ -96,7 +96,7 @@ public class PreparedStatementInvalidationIT {
             .withExecutionProfile(sessionRule.slowProfile())
             .build());
     BoundStatement bs = ps.bind(1);
-    ResultSet rows = session.execute(bs);
+    ResultSet<Row> rows = session.execute(bs);
 
     // Then
     ByteBuffer idAfter = ps.getResultMetadataId();
@@ -120,7 +120,7 @@ public class PreparedStatementInvalidationIT {
     ByteBuffer idBefore = ps.getResultMetadataId();
     assertThat(ps.getResultSetDefinitions()).hasSize(3);
 
-    ResultSet rows = session.execute(ps.bind());
+    ResultSet<Row> rows = session.execute(ps.bind());
     assertThat(rows.isFullyFetched()).isFalse();
     assertThat(rows.getColumnDefinitions()).hasSize(3);
     assertThat(rows.getColumnDefinitions().contains("d")).isFalse();
@@ -171,8 +171,8 @@ public class PreparedStatementInvalidationIT {
     ByteBuffer id1a = ps1.getResultMetadataId();
     ByteBuffer id2a = ps2.getResultMetadataId();
 
-    ResultSet rows1 = session1.execute(ps1.bind(1));
-    ResultSet rows2 = session2.execute(ps2.bind(1));
+    ResultSet<Row> rows1 = session1.execute(ps1.bind(1));
+    ResultSet<Row> rows2 = session2.execute(ps2.bind(1));
 
     assertThat(rows1.getColumnDefinitions()).hasSize(3);
     assertThat(rows1.getColumnDefinitions().contains("d")).isFalse();
@@ -254,7 +254,7 @@ public class PreparedStatementInvalidationIT {
     ByteBuffer idBefore = ps.getResultMetadataId();
 
     // When
-    ResultSet rs = session.execute(ps.bind(5, 5, 5));
+    ResultSet<Row> rs = session.execute(ps.bind(5, 5, 5));
 
     // Then
     // Successful conditional update => only contains the [applied] column

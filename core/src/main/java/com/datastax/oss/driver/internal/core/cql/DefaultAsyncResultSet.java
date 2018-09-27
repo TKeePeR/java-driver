@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NotThreadSafe // wraps a mutable queue
-public class DefaultAsyncResultSet implements AsyncResultSet {
+public class DefaultAsyncResultSet implements AsyncResultSet<Row> {
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultAsyncResultSet.class);
 
@@ -95,7 +95,8 @@ public class DefaultAsyncResultSet implements AsyncResultSet {
 
   @NonNull
   @Override
-  public CompletionStage<? extends AsyncResultSet> fetchNextPage() throws IllegalStateException {
+  public CompletionStage<? extends AsyncResultSet<Row>> fetchNextPage()
+      throws IllegalStateException {
     ByteBuffer nextState = executionInfo.getPagingState();
     if (nextState == null) {
       throw new IllegalStateException(
@@ -124,8 +125,8 @@ public class DefaultAsyncResultSet implements AsyncResultSet {
     }
   }
 
-  static AsyncResultSet empty(final ExecutionInfo executionInfo) {
-    return new AsyncResultSet() {
+  static AsyncResultSet<Row> empty(final ExecutionInfo executionInfo) {
+    return new AsyncResultSet<Row>() {
       @NonNull
       @Override
       public ColumnDefinitions getColumnDefinitions() {
@@ -156,7 +157,7 @@ public class DefaultAsyncResultSet implements AsyncResultSet {
 
       @NonNull
       @Override
-      public CompletionStage<AsyncResultSet> fetchNextPage() throws IllegalStateException {
+      public CompletionStage<AsyncResultSet<Row>> fetchNextPage() throws IllegalStateException {
         throw new IllegalStateException(
             "No next page. Use #hasMorePages before calling this method to avoid this error.");
       }

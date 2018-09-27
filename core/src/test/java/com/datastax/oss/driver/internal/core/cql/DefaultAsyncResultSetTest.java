@@ -24,6 +24,7 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodecs;
@@ -84,7 +85,7 @@ public class DefaultAsyncResultSetTest {
     Statement<?> mockNextStatement = Mockito.mock(Statement.class);
     Mockito.when(((Statement) statement).copy(mockPagingState)).thenReturn(mockNextStatement);
 
-    CompletableFuture<AsyncResultSet> mockResultFuture = new CompletableFuture<>();
+    CompletableFuture<AsyncResultSet<Row>> mockResultFuture = new CompletableFuture<>();
     Mockito.when(session.executeAsync(Mockito.any(Statement.class)))
         .thenAnswer(invocation -> mockResultFuture);
 
@@ -93,7 +94,7 @@ public class DefaultAsyncResultSetTest {
         new DefaultAsyncResultSet(
             columnDefinitions, executionInfo, new ArrayDeque<>(), session, context);
     assertThat(resultSet.hasMorePages()).isTrue();
-    CompletionStage<? extends AsyncResultSet> nextPageFuture = resultSet.fetchNextPage();
+    CompletionStage<? extends AsyncResultSet<Row>> nextPageFuture = resultSet.fetchNextPage();
 
     // Then
     Mockito.verify(statement).copy(mockPagingState);

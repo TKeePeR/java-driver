@@ -27,7 +27,7 @@ import java.util.concurrent.CompletionStage;
  * @see CqlSession#executeAsync(Statement)
  * @see CqlSession#executeAsync(String)
  */
-public interface AsyncResultSet {
+public interface AsyncResultSet<T> {
 
   /** Returns metadata about the {@linkplain ColumnDefinitions columns} contained in this row. */
   @NonNull
@@ -48,7 +48,7 @@ public interface AsyncResultSet {
    * iterated once: rows are "consumed" as they are read.
    */
   @NonNull
-  Iterable<Row> currentPage();
+  Iterable<T> currentPage();
 
   /**
    * Returns the next row, or {@code null} if the result set is exhausted.
@@ -57,8 +57,8 @@ public interface AsyncResultSet {
    * queries.
    */
   @Nullable
-  default Row one() {
-    Iterator<Row> iterator = currentPage().iterator();
+  default T one() {
+    Iterator<T> iterator = currentPage().iterator();
     return iterator.hasNext() ? iterator.next() : null;
   }
 
@@ -75,7 +75,7 @@ public interface AsyncResultSet {
    *     if you can call this method.
    */
   @NonNull
-  CompletionStage<? extends AsyncResultSet> fetchNextPage() throws IllegalStateException;
+  CompletionStage<? extends AsyncResultSet<T>> fetchNextPage() throws IllegalStateException;
 
   /**
    * If the query that produced this result was a conditional update, indicate whether it was
