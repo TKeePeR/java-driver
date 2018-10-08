@@ -4,6 +4,7 @@
 
 ### 4.0.0-beta2 (in progress)
 
+- [new feature] JAVA-1919: Provide a timestamp <=> ZonedDateTime codec
 - [bug] JAVA-1948: Close session properly when LBP fails to initialize
 - [improvement] JAVA-1949: Improve error message when contact points are wrong
 - [improvement] JAVA-1956: Add statementsCount accessor to BatchStatementBuilder
